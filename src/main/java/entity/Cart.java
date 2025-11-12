@@ -37,7 +37,9 @@ import java.util.Date;
 @NamedQueries({
     @NamedQuery(name = "Cart.findAll", query = "SELECT c FROM Cart c"),
     @NamedQuery(name = "Cart.findByCartId", query = "SELECT c FROM Cart c WHERE c.cartId = :cartId"),
-    @NamedQuery(name = "Cart.findByCreatedAt", query = "SELECT c FROM Cart c WHERE c.createdAt = :createdAt")})
+    @NamedQuery(name = "Cart.findByCreatedAt", query = "SELECT c FROM Cart c WHERE c.createdAt = :createdAt"),
+// ✅ NamedQuery to get active cart for a user
+    @NamedQuery(name = "Cart.findActiveByUser", query = "SELECT c FROM Cart c WHERE c.userId = :user AND c.status = 'ACTIVE'")})
 public class Cart implements Serializable {
 
     private static final long serialVersionUID = 1L;

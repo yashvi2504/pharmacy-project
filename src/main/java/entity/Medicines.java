@@ -25,18 +25,34 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import jakarta.json.bind.annotation.JsonbDateFormat;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 @Entity
 @Table(name = "medicines")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Medicines.findAll", query = "SELECT m FROM Medicines m"),
-    @NamedQuery(name = "Medicines.findByMedicineId", query = "SELECT m FROM Medicines m WHERE m.medicineId = :medicineId"),
-    @NamedQuery(name = "Medicines.findByName", query = "SELECT m FROM Medicines m WHERE m.name = :name"),
-    @NamedQuery(name = "Medicines.findByBrand", query = "SELECT m FROM Medicines m WHERE m.brand = :brand"),
-    @NamedQuery(name = "Medicines.findByPrice", query = "SELECT m FROM Medicines m WHERE m.price = :price"),
-    @NamedQuery(name = "Medicines.findByStock", query = "SELECT m FROM Medicines m WHERE m.stock = :stock"),
-    @NamedQuery(name = "Medicines.findByExpiryDate", query = "SELECT m FROM Medicines m WHERE m.expiryDate = :expiryDate")
+    @NamedQuery(
+        name = "Medicines.findByName",
+        query = "SELECT m FROM Medicines m WHERE LOWER(m.name) LIKE LOWER(CONCAT('%', :name, '%'))"
+    ),
+    @NamedQuery(
+        name = "Medicines.findAll",
+        query = "SELECT m FROM Medicines m"
+    ),
+    @NamedQuery(
+    name = "Medicines.findByCategory",
+    query = "SELECT m FROM Medicines m WHERE m.categoryId.categoryId = :categoryId"
+),
+@NamedQuery(
+    name = "Medicines.findByManufacturer",
+    query = "SELECT m FROM Medicines m WHERE m.manufacturerId.manufacturerId = :manufacturerId"
+),
+@NamedQuery(
+    name = "Medicines.findLowStock",
+    query = "SELECT m FROM Medicines m WHERE m.stock < :threshold"
+)
+
+
 })
 public class Medicines implements Serializable {
 
@@ -104,9 +120,6 @@ private String description;
     private Collection<OrderItems> orderItemsCollection;
 @Column(name = "pack_of")
 private Integer packOf;
-
-@Column(name = "price_per_unit", insertable = false, updatable = false)
-private BigDecimal pricePerUnit;
 
     public Medicines() {
     }
@@ -250,20 +263,8 @@ private BigDecimal pricePerUnit;
         this.packOf = packOf;
     }
 
-    public BigDecimal getPricePerUnit() {
-        return pricePerUnit;
-    }
+    
 
-    public void setPricePerUnit(BigDecimal pricePerUnit) {
-        this.pricePerUnit = pricePerUnit;
-    }
-    @Transient
-public java.math.BigDecimal getComputedPricePerUnit() {
-    if (price != null && packOf != null && packOf > 0) {
-        return price.divide(new java.math.BigDecimal(packOf), 2, java.math.RoundingMode.HALF_UP);
-    }
-    return null;
-}
 
 public void setCategoryIdInt(int id) {
     this.categoryId = new Categories();

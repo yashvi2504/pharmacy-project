@@ -1,6 +1,5 @@
 com\mycompany\logic_pharmacy\resources\JakartaEE10Resource.class
 entity\Medicines.class
-rest\CustomerREST$ItemDetails.class
 entity\DeliveryTracking.class
 entity\Payments.class
 rest\CustomerREST.class
@@ -10,7 +9,6 @@ entity\Offers.class
 rest\DeliveryREST.class
 entity\Users.class
 entity\Orders.class
-rest\CustomerREST$AddAddressRequest.class
 entity\Delivery.class
 com\mycompany\logic_pharmacy\JakartaRestConfiguration.class
 ejb\CustomerEJB.class
@@ -21,13 +19,10 @@ ejb\CustomerEJBLocal.class
 rest\AdminREST.class
 entity\Categories.class
 entity\Cart.class
-rest\CustomerREST$AddToCartRequest.class
 entity\Roles.class
 entity\Invoices.class
 entity\CartItems.class
-rest\CustomerREST$OrderRequest.class
 entity\DeliveryPartners.class
 ejb\DeliveryEJBLocal.class
 ejb\DeliveryEJB.class
-rest\CustomerREST$OrderResponse.class
 ejb\AdminEJBLocal.class

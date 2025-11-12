@@ -7,44 +7,56 @@ import entity.Medicines;
 import entity.Offers;
 import entity.Orders;
 import entity.DeliveryTracking; 
+import entity.Manufacturers;
 import jakarta.ejb.Local;
+import java.util.Collection;
 import java.util.List;
 
 @Local
 public interface CustomerEJBLocal {
 
     List<Categories> getAllCategories();//done
+    Collection<Medicines> getAllMedicines();//done
+    List<Manufacturers> getAllManufacturers();//done
 
-    
-    List<Medicines> getAllMedicines();//dome
 
-    Medicines getMedicineById(int medicineId);//done
+    // ===== Medicine retrieval/search =====
+//    Medicines getMedicineById(Integer medicineId);
+    Collection<Medicines> getMedicinesByCategory(Integer categoryId);
+    Collection<Medicines> getMedicinesByManufacturer(Integer manufacturerId);
 
-    List<Medicines> getMedicinesByCategory(int categoryId);//done
+    Collection<Medicines> getMedicineByName(String name);
+//    Collection<Medicines> searchMedicines(String name, Integer categoryId, Integer manufacturerId);
 
-    List<Medicines> searchMedicines(String query);//done
+    // ===== Offers =====
+    Collection<Offers> getActiveOffers();
 
-    List<Offers> getActiveOffers();//done
+    // ===== Cart operations =====
+    Cart getActiveCart(Integer userId);
 
-    String addOrUpdateCartItem(int userId, int medicineId, int quantity);//done
+    String addOrUpdateCartItem(Integer userId, Integer medicineId, int quantity);
 
-    String removeCartItem(int userId, int cartItemId); //done
+    String removeCartItem(Integer userId, Integer cartItemId);
+//    Cart getActiveCart(Integer userId);
 
-    Cart getActiveCart(int userId);//done
+    // ===== Address management =====
+   
+    // Add an address using individual fields
+    void addAddressToCustomer(String street, String city, String state, String zip, Integer userId);
 
-    String addAddress(Addresses address);//done
+    // Update an address by fields
+    void updateAddress(Integer addressId, String street, String city, String state, String zip, Integer userId);
 
-    String updateAddress(Addresses address);//done
+    // Delete an address by ID and userId
+    void deleteAddress(Integer addressId, Integer userId);
 
-    String deleteAddress(int addressId, int userId);//done 
+    // Get all addresses for a specific user
+    List<Addresses> getAddressesByUserId(Integer userId);
+    // ===== Orders =====
+    Orders placeOrderFromCart(Integer userId, Integer shippingAddressId, String paymentMethod);
+    List<Orders> getOrderHistory(Integer userId);
+    Orders getOrderDetails(Integer orderId, Integer userId);
 
-    List<Addresses> getAddressesByUserId(int userId);//done
-
-    Orders placeOrderFromCart(int userId, int shippingAddressId, String paymentMethod);//dppne
-
-    List<Orders> getOrderHistory(int userId);//donr
-
-    Orders getOrderDetails(int orderId, int userId);//done 
-    
-    DeliveryTracking getOrderTracking(int orderId, int userId);//done
+    // ===== Delivery tracking =====
+//    DeliveryTracking getOrderTracking(Integer orderId, Integer userId);
 }

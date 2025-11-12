@@ -6,7 +6,14 @@ import entity.Medicines;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 @Stateless
@@ -14,6 +21,9 @@ public class AdminEJB implements AdminEJBLocal {
 
     @PersistenceContext(unitName = "pharmacyPU")
     private EntityManager em;
+
+    private final String IMAGE_UPLOAD_DIR = "/path/to/upload/medicines/"; // set your path
+
 
     // --------- Category CRUD ---------
     @Override
@@ -95,4 +105,125 @@ public void deleteCategory(Integer categoryId) {
         return em.createNamedQuery("Manufacturers.findAll", Manufacturers.class)
                  .getResultList();
     }
+    
+    @Override
+public void addMedicine(String name, String brand, BigDecimal price, int stock, 
+                        LocalDate expiryDate, Integer categoryId, Integer manufacturerId,
+                        Integer packOf, String description, String picture) {
+
+    
+    Categories category = em.find(Categories.class, categoryId);
+    Manufacturers manufacturer = em.find(Manufacturers.class, manufacturerId);
+
+    Medicines m = new Medicines();
+    m.setName(name);
+    m.setBrand(brand);
+    m.setPrice(price);          // BigDecimal matches
+    m.setStock(stock);
+    m.setExpiryDate(expiryDate); // LocalDate matches
+    m.setPackOf(packOf);        // Integer matches
+    m.setDescription(description);
+    m.setPicture(picture);
+
+    m.setCategoryId(category);
+    m.setManufacturerId(manufacturer);
+
+
+    em.persist(m);
+    em.merge(m);
+}
+
+    @Override
+public void updateMedicine(Integer medicineId, String name, String brand, BigDecimal price, int stock,
+                           LocalDate expiryDate, Integer categoryId, Integer manufacturerId,
+                           Integer packOf, String description, String picture) {
+
+    Medicines m = em.find(Medicines.class, medicineId);
+    if (m == null) {
+        throw new RuntimeException("Medicine not found with ID: " + medicineId);
+    }
+
+    m.setName(name);
+    m.setBrand(brand);
+    m.setPrice(price);
+    m.setStock(stock);
+    m.setExpiryDate(expiryDate);
+    m.setPackOf(packOf);
+    m.setDescription(description);
+    
+    if (picture != null && !picture.isEmpty()) {
+        m.setPicture(picture);
+    }
+
+    if (categoryId != null) {
+        Categories c = em.find(Categories.class, categoryId);
+        m.setCategoryId(c);
+    } else {
+        m.setCategoryId(null);
+    }
+
+    if (manufacturerId != null) {
+        Manufacturers manu = em.find(Manufacturers.class, manufacturerId);
+        m.setManufacturerId(manu);
+    } else {
+        m.setManufacturerId(null);
+    }
+
+    em.merge(m);
+}
+    
+    @Override
+    public void deleteMedicine(Integer medicineId) {
+        Medicines m = em.find(Medicines.class, medicineId);
+        
+        em.remove(m);
+    }
+  @Override
+public Collection<Medicines> getAllMedicines() {
+    return em.createNamedQuery("Medicines.findAll").getResultList();
+}
+
+@Override
+public Medicines getMedicineById(Integer medicineId) {
+    Medicines medicine = em.find(Medicines.class, medicineId);
+    return medicine;
+}
+
+@Override
+public Collection<Medicines> getMedicineByName(String name) {
+    Collection<Medicines> medicines = em.createNamedQuery("Medicines.findByName")
+                                        .setParameter("name", name)
+                                        .getResultList();
+    return medicines;
+}
+@Override
+public Collection<Medicines> getMedicinesByCategory(Integer categoryId) {
+    Collection<Medicines> medicines = em.createNamedQuery("Medicines.findByCategory")
+                                        .setParameter("categoryId", categoryId)
+                                        .getResultList();
+    return medicines;
+}
+@Override
+public Collection<Medicines> getMedicinesByManufacturer(Integer manufacturerId) {
+    Collection<Medicines> medicines = em.createNamedQuery("Medicines.findByManufacturer")
+                                        .setParameter("manufacturerId", manufacturerId)
+                                        .getResultList();
+    return medicines;
+}
+
+@Override
+public void updateMedicineStock(Integer medicineId, int newStock) {
+    Medicines medicine = em.find(Medicines.class, medicineId);
+        medicine.setStock(newStock);
+        em.merge(medicine);
+}
+
+@Override
+public Collection<Medicines> getLowStockMedicines(int threshold) {
+    Collection<Medicines> medicines = em.createNamedQuery("Medicines.findLowStock", Medicines.class)
+                                        .setParameter("threshold", threshold)
+                                        .getResultList();
+    return medicines;
+}
+
 }

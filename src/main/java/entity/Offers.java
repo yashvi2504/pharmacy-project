@@ -25,7 +25,12 @@ import java.util.Date;
 @NamedQueries({
     @NamedQuery(name = "Offers.findAll", query = "SELECT o FROM Offers o"),
     @NamedQuery(name = "Offers.findByOfferId", query = "SELECT o FROM Offers o WHERE o.offerId = :offerId"),
-    @NamedQuery(name = "Offers.findByActive", query = "SELECT o FROM Offers o WHERE o.active = :active")})
+   @NamedQuery(
+    name = "Offers.findActive",
+    query = "SELECT o FROM Offers o WHERE o.endDate >= CURRENT_DATE AND o.active = true"
+)
+
+})
 public class Offers implements Serializable {
 
     private static final long serialVersionUID = 1L;

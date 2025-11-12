@@ -72,9 +72,9 @@ public class Users implements Serializable {
     @Column(name = "password")
     private String password;
       @JsonbTransient
-  @OneToMany(mappedBy = "userId") // "userId" is the field name in the Addresses class
-    private Collection<Addresses> addressesCollection;
- 
+@OneToMany(mappedBy = "userId", cascade = CascadeType.ALL)
+private Collection<Addresses> addressesCollection;
+
 
  @JsonbTransient
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")

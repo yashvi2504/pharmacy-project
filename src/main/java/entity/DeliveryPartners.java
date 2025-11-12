@@ -4,6 +4,7 @@
  */
 package entity;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,6 +45,8 @@ public class DeliveryPartners implements Serializable {
     @Size(max = 50)
     @Column(name = "vehicle_no")
     private String vehicleNo;
+    
+    @JsonbTransient   // 🚀 Add this line
     @OneToMany(mappedBy = "deliveryPartnerId")
     private Collection<Delivery> deliveryCollection;
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")

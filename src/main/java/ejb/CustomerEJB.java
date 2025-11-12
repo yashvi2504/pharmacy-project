@@ -10,292 +10,358 @@ import jakarta.persistence.TypedQuery;
 import jakarta.validation.ConstraintViolationException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 @Stateless
-@PermitAll
+
 public class CustomerEJB implements CustomerEJBLocal {
 
     @PersistenceContext(unitName = "pharmacyPU")
     private EntityManager em;
 
-    private Cart findOrCreateActiveCart(int userId) {
-        Users user = em.find(Users.class, userId);
-
-        TypedQuery<Cart> query = em.createQuery(
-            "SELECT c FROM Cart c WHERE c.userId.userId = :userId AND c.status = :status", Cart.class);
-        query.setParameter("userId", userId);
-        query.setParameter("status", "Active");
-
-        List<Cart> carts = query.getResultList();
-
-        if (!carts.isEmpty()) {
-            return carts.get(0);
-        } else {
-            Cart cart = new Cart();
-            cart.setUserId(user);
-            cart.setCreatedAt(new Date());
-            cart.setStatus("Active");
-            cart.setTotalAmount(0.0);
-            em.persist(cart);
-            return cart;
-        }
-    }
-
-    @Override
-    public List<Categories> getAllCategories() {
-        return em.createNamedQuery("Categories.findAll", Categories.class).getResultList();
-    }
-
-    @Override
-    public List<Medicines> getAllMedicines() {
-        return em.createNamedQuery("Medicines.findAll", Medicines.class).getResultList();
-    }
-
-    @Override
-    public Medicines getMedicineById(int medicineId) {
-        return em.find(Medicines.class, medicineId);
-    }
-
-    @Override
-    public List<Medicines> getMedicinesByCategory(int categoryId) {
-        return em.createQuery(
-            "SELECT m FROM Medicines m WHERE m.categoryId.categoryId = :catId", Medicines.class)
-            .setParameter("catId", categoryId)
-            .getResultList();
-    }
-
-    @Override
-    public List<Medicines> searchMedicines(String query) {
-        return em.createQuery(
-            "SELECT m FROM Medicines m WHERE m.name LIKE :query OR m.description LIKE :query",
-            Medicines.class)
-            .setParameter("query", "%" + query + "%")
-            .getResultList();
-    }
-
-    @Override
-    public List<Offers> getActiveOffers() {
-        return em.createQuery(
-            "SELECT o FROM Offers o WHERE o.active = true AND o.endDate > :now", Offers.class)
-            .setParameter("now", new Date())
-            .getResultList();
-    }
-
-    @Override
-    public String addOrUpdateCartItem(int userId, int medicineId, int quantity) {
-        if (quantity <= 0) {
-            return "Quantity must be greater than zero.";
-        }
-
-        Cart cart = findOrCreateActiveCart(userId);
-        Medicines medicine = em.find(Medicines.class, medicineId);
-
-        if (medicine == null) return "Medicine not found.";
-        if (medicine.getStock() < quantity) return "Not enough stock available.";
-
-        TypedQuery<CartItems> query = em.createQuery(
-            "SELECT ci FROM CartItems ci WHERE ci.cartId.cartId = :cartId AND ci.medicineId.medicineId = :medId",
-            CartItems.class);
-        query.setParameter("cartId", cart.getCartId());
-        query.setParameter("medId", medicineId);
-
-        try {
-            CartItems existingItem = query.getSingleResult();
-            existingItem.setQuantity(existingItem.getQuantity() + quantity);
-            em.merge(existingItem);
-        } catch (NoResultException e) {
-            // ✅ FIXED: Added missing fields for Bean Validation
-            
-            CartItems newItem = new CartItems();
-            newItem.setCartId(cart);
-            newItem.setMedicineId(medicine);
-            newItem.setQuantity(quantity);
-            newItem.setAddedDate(new Date()); // Required
-            newItem.setPricePerUnit(
-                medicine.getPrice() != null ? medicine.getPrice().doubleValue() : 0.0
-            ); 
-            em.persist(newItem);
-        }
-
-        return "Item added to cart.";
-    }
-
-  @Override
-public String removeCartItem(int userId, int cartItemId) {
-    try {
-        CartItems item = em.find(CartItems.class, cartItemId);
-        if (item == null) {
-            return "Cart item not found.";
-        }
-
-        Cart cart = item.getCartId();
-        if (cart == null || cart.getUserId() == null || !cart.getUserId().getUserId().equals(userId)) {
-            return "This cart item does not belong to the specified user.";
-        }
-
-        em.remove(item);
-        return "Cart item removed successfully!";
-    } catch (Exception e) {
-        e.printStackTrace();
-        return "Error removing cart item: " + e.getMessage();
-    }
-}
-
-
-    @Override
-    public Cart getActiveCart(int userId) {
-        return findOrCreateActiveCart(userId);
-    }
-
    @Override
-public String addAddress(Addresses address) {
-    System.out.println("🧠 Inside addAddress()");
-    if (address.getUserId() == null) {
-        System.out.println("❌ address.getUserId() is null");
-        return "Address must be linked to a user.";
-    }
-
-    if (address.getUserId().getUserId() == null) {
-        System.out.println("❌ address.getUserId().getUserId() is null");
-        return "Address must be linked to a user.";
-    }
-
-    Users user = em.find(Users.class, address.getUserId().getUserId());
-    if (user == null) {
-        System.out.println("❌ No user found in DB with ID: " + address.getUserId().getUserId());
-        return "User not found.";
-    }
-
-    address.setUserId(user);
-    em.persist(address);
-    System.out.println("✅ Address saved successfully!");
-    return "Address added successfully.";
+public List<Categories> getAllCategories() {
+    List<Categories> categories = em.createNamedQuery("Categories.findAll", Categories.class)
+                                    .getResultList();
+    return categories;
 }
-
-
-    @Override
-    public String updateAddress(Addresses address) {
-        if (address.getAddressId() == null) {
-            return "Address ID is required for update.";
-        }
-        em.merge(address);
-        return "Address updated successfully.";
-    }
-
-    @Override
-    public String deleteAddress(int addressId, int userId) {
-        Addresses address = em.find(Addresses.class, addressId);
-        if (address == null) return "Address not found.";
-        if (address.getUserId().getUserId() != userId) {
-            return "Authorization error: Cannot delete another user's address.";
-        }
-        em.remove(address);
-        return "Address deleted.";
-    }
-
-    @Override
-    public List<Addresses> getAddressesByUserId(int userId) {
-        return em.createQuery(
-            "SELECT a FROM Addresses a WHERE a.userId.userId = :userId", Addresses.class)
-            .setParameter("userId", userId)
-            .getResultList();
-    }
-    
-public Orders placeOrderFromCart(int userId, int addressId, String paymentMethod) {
-    try {
-        // 1️⃣ Fetch the user's active cart
-        Cart cart = em.createQuery(
-                "SELECT c FROM Cart c WHERE c.userId.userId = :userId AND c.status = 'Active'", Cart.class)
-                .setParameter("userId", userId)
-                .setMaxResults(1)
-                .getSingleResult();
-
-        // 2️⃣ Fetch all items from the cart
-        List<CartItems> cartItems = em.createQuery(
-                "SELECT ci FROM CartItems ci WHERE ci.cartId = :cart", CartItems.class)
-                .setParameter("cart", cart)
-                .getResultList();
-
-        if (cartItems.isEmpty()) {
-            throw new RuntimeException("Cart is empty. Cannot place order.");
-        }
-
-        // 3️⃣ Create a new order
-        Orders order = new Orders();
-        order.setOrderDate(new Date());
-        order.setStatus("Pending");
-        order.setPaymentMethod(paymentMethod);
-        order.setUserId(cart.getUserId());
-        order.setAddressId(em.find(Addresses.class, addressId));
-
-        BigDecimal total = BigDecimal.ZERO;
-        List<OrderItems> orderItemsList = new ArrayList<>();
-
-        // 4️⃣ Convert each cart item into an order item
-        for (CartItems cartItem : cartItems) {
-            OrderItems orderItem = new OrderItems();
-            orderItem.setOrderId(order);
-            orderItem.setMedicineId(cartItem.getMedicineId());
-            orderItem.setQuantity(cartItem.getQuantity());
-
-            BigDecimal lineTotal = BigDecimal.valueOf(cartItem.getPricePerUnit())
-                    .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
-            orderItem.setPrice(lineTotal);
-
-            total = total.add(lineTotal);
-            em.persist(orderItem);
-            orderItemsList.add(orderItem);
-        }
-
-        // 5️⃣ Set totals & persist order
-        order.setTotalAmount(total);
-        order.setOrderItemsCollection(orderItemsList);
-        em.persist(order);
-
-        // 6️⃣ Mark cart as completed
-        cart.setStatus("Completed");
-        em.merge(cart);
-
-        return order;
-
-    } catch (NoResultException e) {
-        throw new RuntimeException("No active cart found for this user.");
-    } catch (Exception e) {
-        throw new RuntimeException("Error placing order: " + e.getMessage(), e);
-    }
+@Override
+public Collection<Medicines> getAllMedicines() {
+    Collection<Medicines> medicines = em.createNamedQuery("Medicines.findAll", Medicines.class)
+                                        .getResultList();
+    return medicines;
 }
 
 @Override
-    public List<Orders> getOrderHistory(int userId) {
-        return em.createQuery(
-            "SELECT o FROM Orders o WHERE o.userId.userId = :userId ORDER BY o.orderDate DESC", Orders.class)
-            .setParameter("userId", userId)
-            .getResultList();
+public List<Manufacturers> getAllManufacturers() {
+    List<Manufacturers> manufacturers = em.createNamedQuery("Manufacturers.findAll", Manufacturers.class)
+                                          .getResultList();
+    return manufacturers;
+}
+
+   @Override
+public Collection<Medicines> getMedicinesByCategory(Integer categoryId) {
+    Collection<Medicines> medicines = em.createNamedQuery("Medicines.findByCategory", Medicines.class)
+                                        .setParameter("categoryId", categoryId)
+                                        .getResultList();
+    return medicines;
+}
+
+    @Override
+public Collection<Medicines> getMedicinesByManufacturer(Integer manufacturerId) {
+    Collection<Medicines> medicines = em.createNamedQuery("Medicines.findByManufacturer", Medicines.class)
+                                        .setParameter("manufacturerId", manufacturerId)
+                                        .getResultList();
+    return medicines;
+}
+@Override
+public Collection<Medicines> getMedicineByName(String name) {
+    Collection<Medicines> medicines = em.createNamedQuery("Medicines.findByName", Medicines.class)
+                                        .setParameter("name", name)
+                                        .getResultList();
+    return medicines;
+}
+@Override
+public Collection<Offers> getActiveOffers() {
+    return em.createNamedQuery("Offers.findActive", Offers.class)
+             .getResultList();
+}
+@Override
+public Cart getActiveCart(Integer userId) {
+    Users user = em.find(Users.class, userId);
+    return em.createNamedQuery("Cart.findActiveByUser", Cart.class)
+             .setParameter("user", user)
+             .getResultStream()
+             .findFirst()
+             .orElse(null); // Returns null if no active cart
+}
+//@Override
+//public String addOrUpdateCartItem(Integer userId, Integer medicineId, int quantity) {
+//    // 1️⃣ Find the user
+//    Users user = em.find(Users.class, userId);
+////    if (user == null) {
+////        return "Error: User not found";
+////    }
+//
+//    // 2️⃣ Find the medicine
+//    Medicines med = em.find(Medicines.class, medicineId);
+////    if (med == null) {
+////        return "Error: Medicine not found";
+////    }
+//
+//    // 3️⃣ Get or create active cart
+//    TypedQuery<Cart> q = em.createNamedQuery("Cart.findActiveByUser", Cart.class);
+//    q.setParameter("user", user);
+//    Cart cart = q.getResultStream().findFirst().orElse(null);
+//
+//    if (cart == null) {
+//        cart = new Cart();
+//        cart.setUserId(user);
+//        cart.setCreatedAt(new Date());
+//        cart.setStatus("ACTIVE");
+//        cart.setTotalAmount(0.0);
+//        cart.setCartItemsCollection(new ArrayList<>());
+//        em.persist(cart);
+//    }
+//
+//    // 4️⃣ Check if item already exists
+//    CartItems existingItem = null;
+//    for (CartItems item : cart.getCartItemsCollection()) {
+//        if (item.getMedicineId().getMedicineId().equals(medicineId)) {
+//            existingItem = item;
+//            break;
+//        }
+//    }
+//
+//    // 5️⃣ Add or update the cart item
+//    if (existingItem != null) {
+//        existingItem.setQuantity(existingItem.getQuantity() + quantity);
+//        em.merge(existingItem);
+//    } else {
+//        CartItems newItem = new CartItems();
+//        newItem.setCartId(cart);
+//        newItem.setMedicineId(med);
+//        newItem.setQuantity(quantity);
+//        newItem.setPricePerUnit(med.getPrice().doubleValue());
+//        newItem.setAddedDate(new Date());
+//        em.persist(newItem);
+//
+//        cart.getCartItemsCollection().add(newItem);
+//        em.merge(cart);
+//    }
+//
+//    return "Cart updated successfully";
+//}
+@Override
+public String addOrUpdateCartItem(Integer userId, Integer medicineId, int quantity) {
+    Users user = em.find(Users.class, userId);
+    
+    // Get active cart
+    TypedQuery<Cart> q = em.createNamedQuery("Cart.findActiveByUser", Cart.class);
+    q.setParameter("user", user);
+    Cart cart = q.getResultStream().findFirst().orElse(null);
+    
+    if (cart == null) {
+        // Create new cart if none exists
+        cart = new Cart();
+        cart.setUserId(user);
+        cart.setCreatedAt(new Date());
+        cart.setStatus("ACTIVE");
+        cart.setTotalAmount(0.0);
+        cart.setCartItemsCollection(new ArrayList<>()); // initialize collection
+        em.persist(cart);
+    }
+    
+    // Find existing cart item
+    CartItems existingItem = null;
+    for (CartItems item : cart.getCartItemsCollection()) {
+        if (item.getMedicineId().getMedicineId().equals(medicineId)) {
+            existingItem = item;
+            break;
+        }
+    }
+    
+    Medicines med = em.find(Medicines.class, medicineId);
+    if (med == null) return "Medicine not found!";
+    
+    if (existingItem != null) {
+        existingItem.setQuantity(existingItem.getQuantity() + quantity);
+        em.merge(existingItem);
+    } else {
+        CartItems newItem = new CartItems();
+        newItem.setCartId(cart);
+        newItem.setMedicineId(med);
+        newItem.setQuantity(quantity);
+        newItem.setPricePerUnit(med.getPrice().doubleValue());
+        newItem.setAddedDate(new Date());
+        em.persist(newItem);
+
+        cart.getCartItemsCollection().add(newItem);
+    }
+    
+    // Recalculate total amount
+    double total = 0.0;
+    for (CartItems item : cart.getCartItemsCollection()) {
+        total += item.getPricePerUnit() * item.getQuantity();
+    }
+    cart.setTotalAmount(total);
+    em.merge(cart);
+
+    return "Cart updated successfully. Total: " + total;
+}
+
+@Override
+public String removeCartItem(Integer userId, Integer cartItemId) {
+    // Get the active cart for the given user
+    Cart cart = getActiveCart(userId);
+
+    // If no active cart exists, return a message
+    if (cart == null) {
+        return "No active cart found for user.";
+    }
+
+    // Initialize a variable to hold the item to remove
+    CartItems itemToRemove = null;
+
+    // Loop through the items in the cart to find the one to remove
+    for (CartItems item : cart.getCartItemsCollection()) {
+        // Check if the current item's ID matches the cartItemId
+        if (item.getCartItemId().equals(cartItemId)) {
+            // Found the item, assign it to itemToRemove
+            itemToRemove = item;
+            // Exit the loop since item is found
+            break;
+        }
+    }
+
+    // If the item was not found in the cart, return a message
+    if (itemToRemove == null) {
+        return "Cart item not found.";
+    }
+
+    // Remove the item from the cart's collection
+    cart.getCartItemsCollection().remove(itemToRemove);
+
+    // Remove the item from the database
+    em.remove(em.contains(itemToRemove) ? itemToRemove : em.merge(itemToRemove));
+
+    // Recalculate the total amount of the cart after removal
+    double total = 0.0;
+    for (CartItems item : cart.getCartItemsCollection()) {
+        total += item.getPricePerUnit() * item.getQuantity(); // Sum price * quantity
+    }
+
+    // Update the cart's total amount
+    cart.setTotalAmount(total);
+
+    // Merge the updated cart back into the database
+    em.merge(cart);
+
+    // Return a success message with the updated total
+    return "Cart item removed successfully. Total: " + total;
+}
+ 
+  
+    @Override
+    public void addAddressToCustomer(String street, String city, String state, String zip, Integer userId) {
+        // Find the user
+        Users user = em.find(Users.class, userId);
+
+        // Create new address
+        Addresses a = new Addresses();
+        a.setAddressLine(street);
+        a.setCity(city);
+        a.setState(state);
+        a.setPincode(zip);
+        a.setUserId(user);
+
+        // Add to user's address collection
+        Collection<Addresses> addresses = user.getAddressesCollection(); // make sure Users has this collection
+        if (addresses == null) {
+            addresses = new ArrayList<>();
+        }
+        addresses.add(a);
+        user.setAddressesCollection(addresses);
+
+        // Persist address and merge user
+        em.persist(a);
+        em.merge(user);
     }
 
     @Override
-    public Orders getOrderDetails(int orderId, int userId) {
-        Orders order = em.find(Orders.class, orderId);
-        if (order != null && order.getUserId().getUserId() == userId) {
-            return order;
+    public void updateAddress(Integer addressId, String street, String city, String state, String zip, Integer userId) {
+        Addresses a = em.find(Addresses.class, addressId);
+        if (a != null && a.getUserId().getUserId().equals(userId)) {
+            a.setAddressLine(street);
+            a.setCity(city);
+            a.setState(state);
+            a.setPincode(zip);
+            em.merge(a);
         }
-        return null;
     }
 
     @Override
-    public DeliveryTracking getOrderTracking(int orderId, int userId) {
-        TypedQuery<DeliveryTracking> q = em.createQuery(
-            "SELECT dt FROM DeliveryTracking dt WHERE dt.deliveryId.orderId.orderId = :orderId AND dt.deliveryId.orderId.userId.userId = :userId",
-            DeliveryTracking.class);
-        q.setParameter("orderId", orderId);
-        q.setParameter("userId", userId);
-
-        try {
-            return q.getSingleResult();
-        } catch (NoResultException e) {
-            return null;
+    public void deleteAddress(Integer addressId, Integer userId) {
+        Addresses a = em.find(Addresses.class, addressId);
+        if (a != null && a.getUserId().getUserId().equals(userId)) {
+            em.remove(a);
         }
     }
+
+    @Override
+    public List<Addresses> getAddressesByUserId(Integer userId) {
+        TypedQuery<Addresses> q = em.createNamedQuery("Addresses.findAll", Addresses.class);
+        List<Addresses> all = q.getResultList();
+        all.removeIf(addr -> !addr.getUserId().getUserId().equals(userId));
+        return all;
+    }
+// ===================== ORDER MANAGEMENT =====================
+
+@Override
+public Orders placeOrderFromCart(Integer userId, Integer shippingAddressId, String paymentMethod) {
+    Users user = em.find(Users.class, userId);
+
+    // 1️⃣ Get active cart
+    TypedQuery<Cart> q = em.createNamedQuery("Cart.findActiveByUser", Cart.class);
+    q.setParameter("user", user);
+    Cart cart = q.getResultStream().findFirst().orElse(null);
+
+    if (cart == null || cart.getCartItemsCollection().isEmpty()) {
+        throw new RuntimeException("Cart is empty or not found for user ID: " + userId);
+    }
+
+    // 2️⃣ Create new order
+    Orders order = new Orders();
+    order.setUserId(user);
+    order.setOrderDate(new Date());
+    order.setStatus("Pending");
+    order.setPaymentMethod(paymentMethod);
+    order.setDeliveryAddressId(em.find(Addresses.class, shippingAddressId));
+
+    BigDecimal total = BigDecimal.ZERO;
+    List<OrderItems> orderItemsList = new ArrayList<>();
+
+    // 3️⃣ Convert cart items to order items
+    for (CartItems cartItem : cart.getCartItemsCollection()) {
+        OrderItems orderItem = new OrderItems();
+        orderItem.setOrderId(order);
+        orderItem.setMedicineId(cartItem.getMedicineId());
+        orderItem.setQuantity(cartItem.getQuantity());
+        BigDecimal price = BigDecimal.valueOf(cartItem.getPricePerUnit() * cartItem.getQuantity());
+        orderItem.setPrice(price);
+        total = total.add(price);
+        em.persist(orderItem);
+        orderItemsList.add(orderItem);
+    }
+
+    order.setTotalAmount(total);
+    order.setOrderItemsCollection(orderItemsList);
+    em.persist(order);
+
+    // 4️⃣ Mark cart as completed
+    cart.setStatus("Completed");
+    em.merge(cart);
+
+    return order;
+}
+
+@Override
+public List<Orders> getOrderHistory(Integer userId) {
+    TypedQuery<Orders> q = em.createQuery(
+        "SELECT o FROM Orders o WHERE o.userId.userId = :userId ORDER BY o.orderDate DESC", Orders.class);
+    q.setParameter("userId", userId);
+    return q.getResultList();
+}
+
+@Override
+public Orders getOrderDetails(Integer orderId, Integer userId) {
+    TypedQuery<Orders> q = em.createQuery(
+        "SELECT o FROM Orders o WHERE o.orderId = :orderId AND o.userId.userId = :userId", Orders.class);
+    q.setParameter("orderId", orderId);
+    q.setParameter("userId", userId);
+    return q.getResultStream().findFirst().orElse(null);
+}
+
 }
