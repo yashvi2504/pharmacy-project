@@ -258,8 +258,7 @@ public String removeCartItem(Integer userId, Integer cartItemId) {
         a.setUserId(user);
 
         // Add to user's address collection
-        Collection<Addresses> addresses = user.getAddressesCollection(); // make sure Users has this collection
-        if (addresses == null) {
+        Collection<Addresses> addresses = user.getAddressesCollection();         if (addresses == null) {
             addresses = new ArrayList<>();
         }
         addresses.add(a);

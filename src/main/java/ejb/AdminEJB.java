@@ -87,8 +87,6 @@ public void deleteCategory(Integer categoryId) {
     public void deleteManufacturer(Integer manufacturerId) {
         Manufacturers manufacturer = em.find(Manufacturers.class, manufacturerId);
         if (manufacturer == null) return;
-
-        // Remove parent reference from medicines
         Collection<Medicines> medicines = manufacturer.getMedicinesCollection();
         if (medicines != null) {
             for (Medicines m : medicines) {
@@ -118,19 +116,28 @@ public void addMedicine(String name, String brand, BigDecimal price, int stock,
     Medicines m = new Medicines();
     m.setName(name);
     m.setBrand(brand);
-    m.setPrice(price);          // BigDecimal matches
+    m.setPrice(price);          
     m.setStock(stock);
-    m.setExpiryDate(expiryDate); // LocalDate matches
-    m.setPackOf(packOf);        // Integer matches
+    m.setExpiryDate(expiryDate); 
+    m.setPackOf(packOf);       
     m.setDescription(description);
     m.setPicture(picture);
 
     m.setCategoryId(category);
     m.setManufacturerId(manufacturer);
 
+    Collection<Medicines> medicines = category.getMedicinesCollection();
+    medicines.add(m);
+    category.setMedicinesCollection(medicines);
+    
+Collection<Medicines> manufacturerMedicines = manufacturer.getMedicinesCollection();
+manufacturerMedicines.add(m);
+manufacturer.setMedicinesCollection(manufacturerMedicines);
+
 
     em.persist(m);
-    em.merge(m);
+    em.merge(manufacturer);
+    em.merge(category);
 }
 
     @Override

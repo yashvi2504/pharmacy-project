@@ -31,8 +31,7 @@ public class CustomerREST {
     private CustomerEJBLocal customerEJB;
 @EJB
 private AdminEJBLocal adminEJB;
-    
-
+  
     // Get all categories
     @GET
     @Path("categories")
