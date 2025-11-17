@@ -12,21 +12,44 @@
         <jakartaee>10.0.0</jakartaee>
     </properties>
     
-    <dependencies>
-        <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>${jakartaee}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-    <groupId>org.glassfish.jersey.media</groupId>
-    <artifactId>jersey-media-multipart</artifactId>
-    <version>3.1.0</version>
+<dependencies>
+
+    <dependency>
+        <groupId>jakarta.platform</groupId>
+        <artifactId>jakarta.jakartaee-api</artifactId>
+        <version>${jakartaee}</version>
+        <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.glassfish.jersey.media</groupId>
+        <artifactId>jersey-media-multipart</artifactId>
+        <version>3.1.0</version>
+    </dependency>
+<!-- JWT DEPENDENCIES (use only 0.11.5) -->
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-api</artifactId>
+    <version>0.11.5</version>
+</dependency>
+
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.11.5</version>
+    <scope>runtime</scope>
+</dependency>
+
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.11.5</version>
+    <scope>runtime</scope>
 </dependency>
 
 
-    </dependencies>
+</dependencies>
+
     
     <build>
         <plugins>

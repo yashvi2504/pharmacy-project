@@ -2,6 +2,7 @@ package rest;
 
 import ejb.DeliveryEJBLocal;
 import entity.Users;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
