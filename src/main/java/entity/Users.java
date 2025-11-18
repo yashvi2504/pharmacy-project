@@ -35,7 +35,9 @@ import java.util.Collection;
 @NamedQueries({
     @NamedQuery(name = "Users.findAll", query = "SELECT u FROM Users u"),
     @NamedQuery(name = "Users.findByUserId", query = "SELECT u FROM Users u WHERE u.userId = :userId"),
-    @NamedQuery(name = "Users.findByName", query = "SELECT u FROM Users u WHERE u.name = :name"),
+   @NamedQuery(name = "Users.findByUsername", 
+            query = "SELECT u FROM Users u WHERE u.username = :username")
+,
     @NamedQuery(name = "Users.findByEmail", query = "SELECT u FROM Users u WHERE u.email = :email"),
     @NamedQuery(name = "Users.findByPhone", query = "SELECT u FROM Users u WHERE u.phone = :phone"),
     @NamedQuery(name = "Users.findByPassword", query = "SELECT u FROM Users u WHERE u.password = :password")})
@@ -50,8 +52,8 @@ public class Users implements Serializable {
 
     @NotNull
     @Size(min = 1, max = 100)
-    @Column(name = "name")
-    private String name;
+    @Column(name = "username")
+    private String username;
     
     
     // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
@@ -101,9 +103,9 @@ private Collection<Addresses> addressesCollection;
         this.userId = userId;
     }
 
-    public Users(Integer userId, String name, String email, String phone, String password) {
+    public Users(Integer userId, String username, String email, String phone, String password) {
         this.userId = userId;
-        this.name = name;
+        this.username = username;
         this.email = email;
         this.phone = phone;
         this.password = password;
@@ -117,13 +119,9 @@ private Collection<Addresses> addressesCollection;
         this.userId = userId;
     }
 
-    public String getName() {
-        return name;
-    }
+ public String getUsername() { return username; }
+public void setUsername(String username) { this.username = username; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getEmail() {
         return email;

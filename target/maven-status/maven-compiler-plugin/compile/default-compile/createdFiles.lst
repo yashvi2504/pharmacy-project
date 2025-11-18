@@ -37,5 +37,6 @@ entity\CartItems.class
 entity\DeliveryPartners.class
 auth\SecureAuthentication.class
 ejb\DeliveryEJBLocal.class
+beans\HelloBean.class
 ejb\DeliveryEJB.class
 ejb\AdminEJBLocal.class

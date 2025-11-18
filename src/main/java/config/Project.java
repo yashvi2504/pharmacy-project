@@ -1,3 +1,4 @@
+
 package config;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -10,7 +11,7 @@ import jakarta.security.enterprise.identitystore.Pbkdf2PasswordHash;
   Adjust dataSourceLookup, callerQuery and groupsQuery to your actual schema.
 */
 @DatabaseIdentityStoreDefinition(
-        dataSourceLookup = "jdbc/mysql",
+        dataSourceLookup = "jdbc/pharmacy",
         callerQuery = "select password from users where username = ?",
         groupsQuery = "select GROUPNAME from groups where username = ?",
         hashAlgorithm = Pbkdf2PasswordHash.class,

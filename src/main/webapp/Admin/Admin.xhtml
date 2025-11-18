@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+<h:head>
+    <title>Admin Dashboard</title>
+</h:head>
+<h:body>
+    <h2>Admin Dashboard</h2>
+    <h:outputText value="#{helloBean.secureHello}" />
+    <h:outputText value="#{helloBean.message}" style="color:red" />
+
+    <h:form prependId="false">
+        <h:commandButton value="Manage Medicines" action="Admin/medicines.xhtml?faces-redirect=true" />
+        <h:commandButton value="Manage Categories" action="Admin/categories.xhtml?faces-redirect=true" />
+    </h:form>
+
+    <br/>
+    <a href="/logic_pharmacy/Logout.jsf" style="color:red">Logout</a>
+</h:body>
+</html>

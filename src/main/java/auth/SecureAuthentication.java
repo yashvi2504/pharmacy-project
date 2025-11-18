@@ -10,11 +10,6 @@ import jakarta.inject.Named;
 import jakarta.security.enterprise.AuthenticationException;
 import jakarta.security.enterprise.AuthenticationStatus;
 import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageContext;
-import jakarta.security.enterprise.credential.Credential;
-import jakarta.security.enterprise.credential.Password;
-import jakarta.security.enterprise.credential.UsernamePasswordCredential;
-import jakarta.security.enterprise.identitystore.CredentialValidationResult;
-import jakarta.security.enterprise.identitystore.IdentityStoreHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import static jwtrest.Constants.AUTHORIZATION_HEADER;
@@ -22,13 +17,17 @@ import static jwtrest.Constants.BEARER;
 import jwtrest.JWTCredential;
 import jwtrest.TokenProvider;
 import record.KeepRecord;
+import entity.Users;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.NoResultException;
+import java.security.Principal;
+import java.util.Set;
+import java.util.HashSet;
 
 @Named
 @RequestScoped
 public class SecureAuthentication implements HttpAuthenticationMechanism, Serializable {
-
-    @Inject
-    IdentityStoreHandler handler;
 
     @Inject
     TokenProvider tokenProvider;
@@ -38,6 +37,10 @@ public class SecureAuthentication implements HttpAuthenticationMechanism, Serial
 
     @Inject
     KeepRecord keepRecord;
+
+    // Use your persistence unit name (pharmacyPU or whatever your persistence.xml declares)
+    @PersistenceContext(unitName = "pharmacyPU")
+    private EntityManager em;
 
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext ctx) throws AuthenticationException {
@@ -51,41 +54,69 @@ public class SecureAuthentication implements HttpAuthenticationMechanism, Serial
             }
         } catch (Exception e) { e.printStackTrace(); }
 
-        // if request contains username/password parameters => form login attempt
+        // try to extract bearer token first
         String token = extractToken(ctx);
+
         try {
+            // If we have no token and the request is a username/password form login:
             if (token == null && request.getParameter("username") != null) {
-                String username = request.getParameter("username");
+                String usernameOrEmail = request.getParameter("username");
                 String password = request.getParameter("password");
 
-                Credential credential = new UsernamePasswordCredential(username, new Password(password));
-                CredentialValidationResult result = handler.validate(credential);
+                try {
+                    // Query DB directly (plain-text password compare)
+                    // NOTE: use email if that's what you expect; your Users entity has 'email' field.
+                    Users user = em.createQuery(
+                            "SELECT u FROM Users u WHERE u.email = :e AND u.password = :p", Users.class)
+                            .setParameter("e", usernameOrEmail)
+                            .setParameter("p", password)
+                            .getSingleResult();
 
-                if (result.getStatus() == jakarta.security.enterprise.identitystore.CredentialValidationResult.Status.VALID) {
-                    AuthenticationStatus status = createToken(result, ctx);
+                    // Build Principal and roles set
+                    final Principal principal = () -> user.getEmail(); // or user.getUsername() if you changed entity
+                    Set<String> roles = new HashSet<>();
+                    if (user.getRoleId() != null) {
+                        // Role name from Roles entity, e.g. "Admin"
+                        roles.add(user.getRoleId().getRoleName());
+                    }
 
-                    // notify container (so programmatic security works)
-                    ctx.notifyContainerAboutLogin(result);
+                    // Create JWT and store it + add header
+                    String jwt = tokenProvider.createToken(principal.getName(), roles, false);
+                    keepRecord.setToken(jwt);
+                    keepRecord.setPrincipal(principal);
+                    keepRecord.setRoles(roles);
+                    contextResponseAddHeader(ctx, AUTHORIZATION_HEADER, BEARER + jwt);
 
-                    keepRecord.setPrincipal(result.getCallerPrincipal());
-                    keepRecord.setRoles(result.getCallerGroups());
-                    keepRecord.setCredential(credential);
+                    // Tell container about login so @RolesAllowed works
+                    AuthenticationStatus status = ctx.notifyContainerAboutLogin(principal, roles);
 
-                    if (result.getCallerGroups().contains("Admin")) {
-                        request.getRequestDispatcher("admin/Admin.jsf").forward(request, response);
-                    } else {
+                    // Forward user to appropriate page
+                    if (roles.contains("Admin")) {
+                        request.getRequestDispatcher("Admin/Admin.jsf").forward(request, response);
+                    }else if(roles.contains("Delivery")) {
+                        request.getRequestDispatcher("Delivery/delivery.jsf").forward(request, response);
+                    }
+                    else {
                         request.getRequestDispatcher("index.xhtml").forward(request, response);
                     }
+
                     return status;
-                } else {
+
+                } catch (NoResultException nre) {
+                    // invalid credentials
                     keepRecord.setErrorStatus("Either Username or Password is wrong !");
+                    response.sendRedirect("Login.jsf");
+                    return ctx.doNothing();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    keepRecord.setErrorStatus("Login error: " + ex.getMessage());
                     response.sendRedirect("Login.jsf");
                     return ctx.doNothing();
                 }
             }
 
+            // If we already have a token in session, set container identity
             if (keepRecord.getToken() != null) {
-                // If we already have a token in session, set container identity
                 ctx.notifyContainerAboutLogin(keepRecord.getPrincipal(), keepRecord.getRoles());
             }
 
@@ -104,6 +135,15 @@ public class SecureAuthentication implements HttpAuthenticationMechanism, Serial
         return ctx.doNothing();
     }
 
+    private void contextResponseAddHeader(HttpMessageContext ctx, String name, String value) {
+        // helper — add header to response (works similarly to context.getResponse().addHeader)
+        try {
+            ctx.getResponse().addHeader(name, value);
+        } catch (Exception e) {
+            // fallback ignored
+        }
+    }
+
     private AuthenticationStatus validateToken(String token, HttpMessageContext context) {
         try {
             if (tokenProvider.validateToken(token)) {
@@ -116,11 +156,12 @@ public class SecureAuthentication implements HttpAuthenticationMechanism, Serial
         }
     }
 
-    private AuthenticationStatus createToken(CredentialValidationResult result, HttpMessageContext context) {
-        String jwt = tokenProvider.createToken(result.getCallerPrincipal().getName(), result.getCallerGroups(), false);
+    // not used in DB login path, keep for token creation use if needed
+    private AuthenticationStatus createTokenFromResult(String username, Set<String> roles, HttpMessageContext context) {
+        String jwt = tokenProvider.createToken(username, roles, false);
         keepRecord.setToken(jwt);
         context.getResponse().addHeader(AUTHORIZATION_HEADER, BEARER + jwt);
-        return context.notifyContainerAboutLogin(result.getCallerPrincipal(), result.getCallerGroups());
+        return context.notifyContainerAboutLogin(() -> username, roles);
     }
 
     private String extractToken(HttpMessageContext context) {

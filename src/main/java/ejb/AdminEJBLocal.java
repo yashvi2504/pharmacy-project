@@ -3,6 +3,7 @@ package ejb;
 import entity.Categories;
 import entity.Manufacturers;
 import entity.Medicines;
+import entity.Users;
 import jakarta.ejb.Local;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -12,7 +13,7 @@ import java.util.List;
 
 @Local
 public interface AdminEJBLocal {
-
+      boolean login(String username, String password);
     void addCategory(String name, String description);
     void updateCategory(Integer categoryId, String name, String description);
     void deleteCategory(Integer categoryId);

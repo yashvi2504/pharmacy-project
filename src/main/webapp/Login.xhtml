@@ -1,16 +1,36 @@
+<!-- webapp/Login.xhtml  (or Login.jsf mapped page) -->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html">
-<h:head><title>Login</title></h:head>
-<h:body><h:form>
+<h:head>
+    <title>Login - Logic Pharmacy</title>
+</h:head>
+<h:body>
+    <h:form prependId="false">
+        <h2>Login</h2>
 
-    <h:panelGrid columns="2">
-      <h:outputLabel for="username" value="Username:" />
-      <h:inputText id="username" value="#{loginBean.username}" />
-      <h:outputLabel for="password" value="Password:" />
-      <h:inputSecret id="password" value="#{loginBean.password}" />
-      <h:commandButton value="Login" action="#{loginBean.login}" />
-    </h:panelGrid>
-  </h:form>
+        <table>
+            <tr>
+                <td>Email</td>
+                <!-- NOTE: name must be exactly "username" because SecureAuthentication reads request.getParameter("username") -->
+                <td><input type="text" name="username" value="" /></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <!-- NOTE: name must be exactly "password" -->
+                <td><input type="password" name="password" value="" /></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="submit" value="Login" />
+                    <input type="reset" value="Reset" />
+                </td>
+            </tr>
+        </table>
+
+        <br/>
+        <!-- show server-side error stored in KeepRecord via LoginBean -->
+        <h:outputText value="#{loginBean.errorStatus}" style="color:red" />
+    </h:form>
 </h:body>
 </html>

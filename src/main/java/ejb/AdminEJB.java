@@ -1,8 +1,10 @@
+
 package ejb;
 
 import entity.Categories;
 import entity.Manufacturers;
 import entity.Medicines;
+import entity.Users;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -231,6 +233,25 @@ public Collection<Medicines> getLowStockMedicines(int threshold) {
                                         .setParameter("threshold", threshold)
                                         .getResultList();
     return medicines;
+}@Override
+public boolean login(String email, String password) {
+    try {
+        Users user = em.createQuery(
+            "SELECT u FROM Users u WHERE u.email = :e AND u.password = :p",
+            Users.class
+        )
+        .setParameter("e", email)
+        .setParameter("p", password)
+        .getSingleResult();
+
+        System.out.println("LOGIN SUCCESS: " + user.getEmail());
+        System.out.println("ROLE = " + user.getRoleId().getRoleName());
+
+        return true;
+    } catch (Exception ex) {
+        System.out.println("LOGIN FAILED: " + ex.getMessage());
+        return false;
+    }
 }
 
-}
+    }
