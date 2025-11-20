@@ -1,36 +1,126 @@
-<!-- webapp/Login.xhtml  (or Login.jsf mapped page) -->
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html">
 <h:head>
     <title>Login - Logic Pharmacy</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            width: 380px;
+        }
+
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .login-table {
+            width: 100%;
+        }
+
+        .login-table td {
+            padding: 10px 0;
+            font-size: 16px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #3498db;
+        }
+
+        .btn-row {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        input[type="submit"],
+        input[type="reset"] {
+            padding: 10px 20px;
+            border: none;
+            background: #3498db;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: 0.3s;
+        }
+
+        input[type="reset"] {
+            background: #95a5a6;
+        }
+
+        input[type="submit"]:hover {
+            background: #2980b9;
+        }
+
+        input[type="reset"]:hover {
+            background: #7f8c8d;
+        }
+
+        .error-text {
+            color: red;
+            margin-top: 15px;
+            display: block;
+            text-align: center;
+        }
+    </style>
+
 </h:head>
+
 <h:body>
-    <h:form prependId="false">
-        <h2>Login</h2>
+    <div class="login-container">
 
-        <table>
-            <tr>
-                <td>Email</td>
-                <!-- NOTE: name must be exactly "username" because SecureAuthentication reads request.getParameter("username") -->
-                <td><input type="text" name="username" value="" /></td>
-            </tr>
-            <tr>
-                <td>Password</td>
-                <!-- NOTE: name must be exactly "password" -->
-                <td><input type="password" name="password" value="" /></td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <input type="submit" value="Login" />
-                    <input type="reset" value="Reset" />
-                </td>
-            </tr>
-        </table>
+        <h:form prependId="false">
+            <h2>Login</h2>
 
-        <br/>
-        <!-- show server-side error stored in KeepRecord via LoginBean -->
-        <h:outputText value="#{loginBean.errorStatus}" style="color:red" />
-    </h:form>
+            <table class="login-table">
+                <tr>
+                    <td>Email</td>
+                    <td><input type="text" name="username" /></td>
+                </tr>
+
+                <tr>
+                    <td>Password</td>
+                    <td><input type="password" name="password" /></td>
+                </tr>
+            </table>
+
+            <div class="btn-row">
+                <input type="submit" value="Login" />
+                <input type="reset" value="Reset" />
+            </div>
+
+            <span class="error-text">
+                <h:outputText value="#{loginBean.errorStatus}" />
+            </span>
+
+        </h:form>
+
+    </div>
 </h:body>
 </html>

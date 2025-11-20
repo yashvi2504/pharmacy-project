@@ -5,6 +5,8 @@ import entity.Categories;
 import entity.Manufacturers;
 import entity.Medicines;
 import entity.Users;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -19,6 +21,8 @@ import java.util.Date;
 import java.util.List;
 
 @Stateless
+//@DeclareRoles({"Admin", "Customer", "Delivery"})
+@RolesAllowed("Admin")   // ⭐ ALL methods require ADMIN
 public class AdminEJB implements AdminEJBLocal {
 
     @PersistenceContext(unitName = "pharmacyPU")

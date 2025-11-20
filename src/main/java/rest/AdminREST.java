@@ -4,6 +4,8 @@ import ejb.AdminEJBLocal;
 import entity.Categories;
 import entity.Manufacturers;
 import entity.Medicines;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -14,6 +16,8 @@ import java.util.Collection;
 import java.util.List;
 
 @Path("/admin")
+@DeclareRoles({"Admin", "Customer", "Delivery"})
+@RolesAllowed("Admin")   // ⭐ ALL endpoints require ADMIN
 public class AdminREST {
 
     @EJB

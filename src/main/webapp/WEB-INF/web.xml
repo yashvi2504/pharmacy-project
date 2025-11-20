@@ -1,36 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+<web-app version="4.0"
+         xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
+
+    <!-- JSF Project Stage -->
     <context-param>
         <param-name>jakarta.faces.PROJECT_STAGE</param-name>
         <param-value>Development</param-value>
     </context-param>
- <servlet>
-    <servlet-name>FacesServlet</servlet-name>
-    <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
-    <load-on-startup>1</load-on-startup>
-</servlet>
 
-<servlet-mapping>
-    <servlet-name>FacesServlet</servlet-name>
-    <url-pattern>*.jsf</url-pattern>
-</servlet-mapping>
+    <!-- JSF Servlet -->
+    <servlet>
+        <servlet-name>Faces Servlet</servlet-name>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
 
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>*.jsf</url-pattern>
+    </servlet-mapping>
+
+    <!-- Session Timeout -->
     <session-config>
-        <session-timeout>
-            30
-        </session-timeout>
+        <session-timeout>30</session-timeout>
     </session-config>
-  <security-constraint>
+
+    <!-- Default Page -->
+    <welcome-file-list>
+        <welcome-file>index.jsf</welcome-file>
+    </welcome-file-list>
+
+    <!-- ============================= -->
+    <!--       PAGE PROTECTIONS        -->
+    <!-- ============================= -->
+
+    <!-- Admin Pages -->
+    <security-constraint>
         <web-resource-collection>
             <web-resource-name>Admin Pages</web-resource-name>
-            <url-pattern>/admin.xhtml</url-pattern>
+            <url-pattern>/Admin/*</url-pattern>
         </web-resource-collection>
-        
         <auth-constraint>
             <role-name>Admin</role-name>
         </auth-constraint>
     </security-constraint>
-    
+
+    <!-- Delivery Pages -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Delivery Pages</web-resource-name>
+            <url-pattern>/Delivery/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>Delivery</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <!-- Customer Pages (if required) -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Customer Pages</web-resource-name>
+            <url-pattern>/Customer/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>Customer</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <!-- Allow Login + Index without login -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Public Pages</web-resource-name>
+            <url-pattern>/Login.jsf</url-pattern>
+            <url-pattern>/index.jsf</url-pattern>
+        </web-resource-collection>
+    </security-constraint>
+
+    <!-- ============================= -->
+    <!--          FORCE HTTPS          -->
+    <!-- ============================= -->
+    <security-constraint>
+        <display-name>HTTPS Constraint</display-name>
+        <web-resource-collection>
+            <web-resource-name>All Pages</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+
+        <user-data-constraint>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+
+    <!-- ============================= -->
+    <!--        DECLARE ROLES          -->
+    <!-- ============================= -->
+
     <security-role>
         <role-name>Admin</role-name>
     </security-role>
@@ -40,4 +107,19 @@
     <security-role>
         <role-name>Delivery</role-name>
     </security-role>
+
+    <!-- ============================= -->
+    <!--     ERROR PAGE HANDLERS       -->
+    <!-- ============================= -->
+
+    <error-page>
+        <error-code>401</error-code>
+        <location>/Unauthorized.jsf</location>
+    </error-page>
+
+    <error-page>
+        <error-code>403</error-code>
+        <location>/Forbidden.jsf</location>
+    </error-page>
+
 </web-app>
