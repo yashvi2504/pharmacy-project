@@ -18,34 +18,34 @@ public class AuthREST {
     @Inject
     private TokenProvider tokenProvider;
 
-  @POST
-@Path("login")
-   @Consumes(MediaType.APPLICATION_JSON)
+    @POST
+    @Path("login")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-public Response login(UserLogin login) {
+    public Response login(UserLogin login) {
 
-    boolean isValid = adminEJB.login(login.getEmail(), login.getPassword());
+        // Use username instead of email
+        boolean isValid = adminEJB.login(login.getUsername(), login.getPassword());
 
-    if (!isValid) {
-        return Response.status(Response.Status.UNAUTHORIZED)
-                .entity("{\"error\":\"Invalid email or password\"}")
-                .build();
+        if (!isValid) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("{\"error\":\"Invalid username or password\"}")
+                    .build();
+        }
+
+        String token = tokenProvider.generateToken("Admin");
+
+        return Response.ok("{\"token\":\"" + token + "\"}").build();
     }
 
-    String token = tokenProvider.generateToken("Admin");
+    public static class UserLogin {
+        private String username; // Changed from email
+        private String password;
 
-    return Response.ok("{\"token\":\"" + token + "\"}").build();
-}
+        public String getUsername() { return username; }
+        public void setUsername(String username) { this.username = username; }
 
- public static class UserLogin {
-    private String email;
-    private String password;
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-}
-
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
 }

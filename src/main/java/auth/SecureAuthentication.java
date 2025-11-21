@@ -69,20 +69,20 @@ if (request.getRequestURI().startsWith(request.getContextPath() + "/api/")) {
         try {
             // If we have no token and the request is a username/password form login:
             if (token == null && request.getParameter("username") != null) {
-                String usernameOrEmail = request.getParameter("username");
+                String username = request.getParameter("username");
                 String password = request.getParameter("password");
 
                 try {
                     // Query DB directly (plain-text password compare)
                     // NOTE: use email if that's what you expect; your Users entity has 'email' field.
                     Users user = em.createQuery(
-                            "SELECT u FROM Users u WHERE u.email = :e AND u.password = :p", Users.class)
-                            .setParameter("e", usernameOrEmail)
+                            "SELECT u FROM Users u WHERE u.username  = :u AND u.password = :p", Users.class)
+                            .setParameter("u", username)
                             .setParameter("p", password)
                             .getSingleResult();
 
                     // Build Principal and roles set
-                    final Principal principal = () -> user.getEmail(); // or user.getUsername() if you changed entity
+                    final Principal principal = () -> user.getUsername(); // or user.getUsername() if you changed entity
                     Set<String> roles = new HashSet<>();
                     if (user.getRoleId() != null) {
                         // Role name from Roles entity, e.g. "Admin"
