@@ -22,6 +22,7 @@ entity\OrderItems.class
 entity\Addresses.class
 rest\ApplicationConfig.class
 jwtrest\Constants.class
+filter\EncodingFilter.class
 ejb\CustomerEJBLocal.class
 client\MyRestFilter.class
 rest\AuthREST.class
