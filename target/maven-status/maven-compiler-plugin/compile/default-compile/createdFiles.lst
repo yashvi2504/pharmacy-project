@@ -39,6 +39,5 @@ entity\DeliveryPartners.class
 auth\SecureAuthentication.class
 ejb\DeliveryEJBLocal.class
 beans\HelloBean.class
-beans\CategoriesBean.class
 ejb\DeliveryEJB.class
 ejb\AdminEJBLocal.class

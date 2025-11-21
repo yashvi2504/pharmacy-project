@@ -16,10 +16,9 @@
             font-family: "Segoe UI", sans-serif;
             margin: 0;
         }
-.scrollable-table {
-    overflow-x: auto;
-}
-
+        .scrollable-table {
+            overflow-x: auto;
+        }
         .topbar {
             height: 70px;
             background: #ffffff;
@@ -28,20 +27,18 @@
             padding: 0 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-
         .app-title {
             font-size: 1.5rem;
             font-weight: bold;
             color: #333;
         }
     </style>
-
 </h:head>
 
 <h:body>
-
     <div class="flex flex-column h-screen">
 
+        <!-- Topbar -->
         <div class="topbar">
             <h:outputText value="Coup Admin Dashboard" styleClass="app-title"/>
         </div>
@@ -52,83 +49,78 @@
                 <!-- Sidebar -->
                 <div class="sidebar p-shadow-3 p-component"
                      style="width: 240px; min-height: calc(100vh - 70px); background-color: #ffffff;">
-
                     <div style="padding: 10px;">
                         <a href="Admin.xhtml" class="block mb-3 flex align-items-center">
                             <i class="pi pi-home mr-2"></i> Dashboard
                         </a>
-
                         <a href="Categories.xhtml" class="block mb-3 flex align-items-center">
                             <i class="pi pi-medkit mr-2"></i> Categories
                         </a>
-
                         <a href="Medicines.xhtml" class="block mb-3 flex align-items-center">
                             <i class="pi pi-tags mr-2"></i> Medicines
                         </a>
-
                         <a href="Users.xhtml" class="block mb-3 flex align-items-center">
                             <i class="pi pi-users mr-2"></i> Users
                         </a>
-
                         <a href="Orders.xhtml" class="block mb-3 flex align-items-center">
                             <i class="pi pi-shopping-bag mr-2"></i> Orders
                         </a>
-
                         <a href="Login.xhtml" class="block mb-3 flex align-items-center" style="color: red;">
                             <i class="pi pi-power-off mr-2"></i> Logout
                         </a>
                     </div>
                 </div>
 
-                <!-- MAIN CONTENT -->
+                <!-- Main Content -->
                 <h:form id="categoriesForm" style="margin-left: 5%; width: 80%;">
-
                     <p:growl id="msgs" showDetail="true" />
 
+                    <!-- Add Category Button -->
                     <p:commandButton value="Add Category"
-                         icon="pi pi-plus"
-                         styleClass="p-button-success mb-3"
-                         update=":categoryDialog"
-                         actionListener="#{categoriesBean.openNew}"
-                         oncomplete="PF('categoryDialog').show()" />
+                                     icon="pi pi-plus"
+                                     styleClass="p-button-success mb-3"
+                                     update=":categoryDialog"
+                                     actionListener="#{adminBean.openNewCategory}"
+                                     oncomplete="PF('categoryDialog').show()" />
+
                     <div class="scrollable-table">
-                    <!-- TABLE -->
-              <p:dataTable id="categoriesTable"
-             value="#{categoriesBean.categoriesList}"
-             var="c" paginator="true"
-             rows="10">
+                        <!-- Categories Table -->
+                        <p:dataTable id="categoriesTable"
+                                     value="#{adminBean.categoriesList}"
+                                     var="c"
+                                     paginator="true"
+                                     rows="10">
 
+                            <p:column headerText="ID">
+                                <h:outputText value="#{c.categoryId}"/>
+                            </p:column>
 
-                        <p:column headerText="ID">
-                            <h:outputText value="#{c.categoryId}"/>
-                        </p:column>
+                            <p:column headerText="Name">
+                                <h:outputText value="#{c.name}"/>
+                            </p:column>
 
-                        <p:column headerText="Name">
-                            <h:outputText value="#{c.name}"/>
-                        </p:column>
+                            <p:column headerText="Description">
+                                <h:outputText value="#{c.description}"/>
+                            </p:column>
 
-                        <p:column headerText="Description">
-                            <h:outputText value="#{c.description}"/>
-                        </p:column>
+                            <p:column headerText="Actions">
+                                <p:commandButton icon="pi pi-pencil"
+                                                 update=":categoryDialog"
+                                                 actionListener="#{adminBean.openEditCategory(c)}"
+                                                 oncomplete="PF('categoryDialog').show()"
+                                                 styleClass="p-button-rounded p-button-warning mr-2"/>
 
-                        <p:column headerText="Actions">
-                            <p:commandButton icon="pi pi-pencil"
-                                             update=":categoryDialog"
-                                             actionListener="#{categoriesBean.openEdit(c)}"
-                                             oncomplete="PF('categoryDialog').show()"
-                                             styleClass="p-button-rounded p-button-warning mr-2"/>
+                                <p:commandButton icon="pi pi-trash"
+                                                 actionListener="#{adminBean.deleteCategory(c)}"
+                                                 update="categoriesForm"
+                                                 styleClass="p-button-rounded p-button-danger"/>
+                            </p:column>
 
-                            <p:commandButton icon="pi pi-trash"
-                                             actionListener="#{categoriesBean.deleteCategory(c)}"
-                                             update="categoriesForm"
-                                             styleClass="p-button-rounded p-button-danger"/>
-                        </p:column>
-
-                    </p:dataTable>
+                        </p:dataTable>
                     </div>
                 </h:form>
 
-                <!-- DIALOG -->
+                <!-- Category Dialog -->
                 <p:dialog id="categoryDialog" widgetVar="categoryDialog"
                           header="Category" modal="true"
                           closable="true" draggable="false" resizable="false">
@@ -137,24 +129,21 @@
                         <h:panelGrid columns="2" cellpadding="8">
 
                             <h:outputLabel value="Name:"/>
-                            <p:inputText value="#{categoriesBean.selectedCategory.name}" required="true"/>
+                            <p:inputText value="#{adminBean.selectedCategory.name}" required="true"/>
 
                             <h:outputLabel value="Description:"/>
-                            <p:inputTextarea value="#{categoriesBean.selectedCategory.description}"/>
+                            <p:inputTextarea value="#{adminBean.selectedCategory.description}"/>
                         </h:panelGrid>
 
                         <f:facet name="footer">
-
                             <p:commandButton value="Save"
-                                             actionListener="#{categoriesBean.saveCategory}"
+                                             actionListener="#{adminBean.saveCategory}"
                                              update=":categoriesForm"
                                              oncomplete="PF('categoryDialog').hide()"/>
 
                             <p:commandButton value="Cancel" type="button"
                                              onclick="PF('categoryDialog').hide()" />
-
                         </f:facet>
-
                     </h:form>
                 </p:dialog>
 
@@ -162,6 +151,5 @@
         </div>
 
     </div>
-
 </h:body>
 </html>
