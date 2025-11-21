@@ -18,18 +18,16 @@
     <class>entity.Medicines</class>
     <class>entity.OrderItems</class>
     <class>entity.Orders</class>
-        <class>entity.Offers</class>
-
+    <class>entity.Offers</class>
     <class>entity.Payments</class>
     <class>entity.Pharmacists</class>
     <class>entity.Prescriptions</class>
     <class>entity.Reviews</class>
     <class>entity.Roles</class>
     <class>entity.Users</class>
-    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <shared-cache-mode>ALL</shared-cache-mode>
     <properties>
-      <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
     </properties>
   </persistence-unit>
 </persistence>

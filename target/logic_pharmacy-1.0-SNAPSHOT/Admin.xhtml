@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <title>Coup Admin Dashboard (PrimeFaces)</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@3.3.1/primeflex.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/primeicons/6.0.1/primeicons.min.css" />
+
+    <style>
+        /*
+         * Note: PrimeFaces Layout and components have their own styling.
+         * We'll use PrimeFlex classes primarily for spacing and utility.
+         */
+        body {
+            /* Keep background color from original CSS */
+            background: #eef3fb;
+            font-family: "Segoe UI", sans-serif;
+            margin: 0;
+        }
+
+        /* Styling for the application title in the header */
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333; /* Dark color for better contrast */
+        }
+
+        /* Custom styling for the top bar (header) if p:layout is not used */
+        .topbar {
+            height: 70px;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Styling for the sidebar title */
+        .sidebar-title {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 10px; /* Add some padding at the top */
+        }
+           .ui-panelmenu .ui-panelmenu-header {
+        display: none !important;
+    }
+    </style>
+
+</h:head>
+
+<h:body>
+    <div class="flex flex-column h-screen">
+        
+        <div class="topbar">
+            <h:outputText value="Coup Admin Dashboard" styleClass="app-title" />
+            </div>
+
+        <div class="flex-grow-1 overflow-auto">
+            <div class="flex">
+                
+                <div class="sidebar p-shadow-3 p-component" style="width: 240px; min-height: calc(100vh - 70px); background-color: #ffffff;">
+                    
+                    <h:panelGroup layout="block" styleClass="sidebar-title" style="">
+                        <!--<h2>Coup Admin</h2>-->
+                    </h:panelGroup>
+<div style="padding: 10px; m">
+
+    <a href="Admin.xhtml" class="block mb-3 flex align-items-center">
+        <i class="pi pi-home mr-2"></i> Dashboard
+    </a>
+
+    <a href="Categories.xhtml" class="block mb-3 flex align-items-center">
+        <i class="pi pi-medkit mr-2"></i> Categories
+    </a>
+
+    <a href="Medicines.xhtml" class="block mb-3 flex align-items-center">
+        <i class="pi pi-tags mr-2"></i> Medicines
+    </a>
+
+    <a href="Users.xhtml" class="block mb-3 flex align-items-center">
+        <i class="pi pi-users mr-2"></i> Users
+    </a>
+
+    <a href="Orders.xhtml" class="block mb-3 flex align-items-center">
+        <i class="pi pi-shopping-bag mr-2"></i> Orders
+    </a>
+
+    <a href="Login.xhtml" class="block mb-3 flex align-items-center" style="color: red;">
+        <i class="pi pi-power-off mr-2"></i> Logout
+    </a>
+
+</div>
+
+
+                </div>
+
+                <h:form style="margin-left: 5%">
+<p:dataTable value="#{adminBean.usersList}" var="u"
+             paginator="true" rows="10"
+             paginatorAlwaysVisible="false"
+             paginatorTemplate="">
+
+        <p:column headerText="ID">
+            <h:outputText value="#{u.userId}" />
+        </p:column>
+
+        <p:column headerText="Username">
+            <h:outputText value="#{u.username}" />
+        </p:column>
+
+        <p:column headerText="Email">
+            <h:outputText value="#{u.email}" />
+        </p:column>
+
+        <p:column headerText="Phone">
+            <h:outputText value="#{u.phone}" />
+        </p:column>
+
+        <p:column headerText="Password">
+            <h:outputText value="#{u.password}" />
+        </p:column>
+
+        <p:column headerText="Role">
+            <h:outputText value="#{u.roleId.roleName}" />
+        </p:column>
+
+    </p:dataTable>
+</h:form>
+
+                
+                
+            </div>
+        </div>
+    </div>
+</h:body>
+</html>

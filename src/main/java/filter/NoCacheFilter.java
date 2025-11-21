@@ -8,7 +8,7 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebFilter(filterName = "NoCacheFilter", urlPatterns = {"/*"})
+@WebFilter(filterName = "NoCacheFilter", urlPatterns = {"*.jsf"})
 public class NoCacheFilter implements Filter {
 
     @Override

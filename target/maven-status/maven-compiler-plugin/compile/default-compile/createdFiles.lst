@@ -1,6 +1,7 @@
 SecureResource.class
 com\mycompany\logic_pharmacy\resources\JakartaEE10Resource.class
 entity\Medicines.class
+beans\AdminBean.class
 entity\DeliveryTracking.class
 entity\Payments.class
 jwtrest\TokenProvider.class
@@ -38,5 +39,6 @@ entity\DeliveryPartners.class
 auth\SecureAuthentication.class
 ejb\DeliveryEJBLocal.class
 beans\HelloBean.class
+beans\CategoriesBean.class
 ejb\DeliveryEJB.class
 ejb\AdminEJBLocal.class

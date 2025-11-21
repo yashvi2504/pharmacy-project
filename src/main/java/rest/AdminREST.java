@@ -191,6 +191,6 @@ public void updateMedicineStock(
 @Produces(MediaType.APPLICATION_JSON)
 public Collection<Medicines> getLowStockMedicines(@PathParam("threshold") int threshold) {
     return adminEJB.getLowStockMedicines(threshold);
-}
+}   
 
 }

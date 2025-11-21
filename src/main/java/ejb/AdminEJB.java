@@ -22,7 +22,7 @@ import java.util.List;
 
 @Stateless
 //@DeclareRoles({"Admin", "Customer", "Delivery"})
-@RolesAllowed("Admin")   // ⭐ ALL methods require ADMIN
+//@RolesAllowed("Admin")   // ⭐ ALL methods require ADMIN
 public class AdminEJB implements AdminEJBLocal {
 
     @PersistenceContext(unitName = "pharmacyPU")
@@ -33,6 +33,7 @@ public class AdminEJB implements AdminEJBLocal {
 
     // --------- Category CRUD ---------
     @Override
+//    @RolesAllowed("Admin") 
     public void addCategory(String name, String description) {
         Categories category = new Categories();
         category.setName(name);
@@ -41,6 +42,7 @@ public class AdminEJB implements AdminEJBLocal {
     }
 
     @Override
+//    @RolesAllowed("Admin") 
     public void updateCategory(Integer categoryId, String name, String description) {
         Categories category = em.find(Categories.class, categoryId);
         if (category != null) {
@@ -51,6 +53,7 @@ public class AdminEJB implements AdminEJBLocal {
     }
 
    @Override
+//   @RolesAllowed("Admin") 
 public void deleteCategory(Integer categoryId) {
     Categories category = em.find(Categories.class, categoryId);
     if (category == null) {
@@ -65,13 +68,19 @@ public void deleteCategory(Integer categoryId) {
     em.remove(category);
 }
 
-    @Override
-    public List<Categories> getAllCategories() {
-        return em.createQuery("SELECT c FROM Categories c", Categories.class).getResultList();
-    }
+@Override
+public List<Categories> getAllCategories() {
+    // If the Categories.class is mapped incorrectly, this query fails silently or returns an empty list.
+    List<Categories> cats = em.createQuery("SELECT c FROM Categories c", Categories.class).getResultList();
+    System.out.println("DEBUG: Categories fetched from DB: " + cats.size()); // This is what we need to see!
+    // ...
+    return cats;
+}
+
 
     // --------- Manufacturer CRUD ---------
     @Override
+    @RolesAllowed("Admin") 
     public void addManufacturer(String name, String contactInfo) {
         Manufacturers manufacturer = new Manufacturers();
         manufacturer.setName(name);
@@ -80,6 +89,7 @@ public void deleteCategory(Integer categoryId) {
     }
 
     @Override
+    @RolesAllowed("Admin") 
     public void updateManufacturer(Integer manufacturerId, String name, String contactInfo) {
         Manufacturers manufacturer = em.find(Manufacturers.class, manufacturerId);
         if (manufacturer != null) {
@@ -90,6 +100,7 @@ public void deleteCategory(Integer categoryId) {
     }
 
     @Override
+    @RolesAllowed("Admin") 
     public void deleteManufacturer(Integer manufacturerId) {
         Manufacturers manufacturer = em.find(Manufacturers.class, manufacturerId);
         if (manufacturer == null) return;
@@ -105,12 +116,14 @@ public void deleteCategory(Integer categoryId) {
     }
 
     @Override
+//    @RolesAllowed("Admin") 
     public List<Manufacturers> getAllManufacturers() {
         return em.createNamedQuery("Manufacturers.findAll", Manufacturers.class)
                  .getResultList();
     }
     
     @Override
+    @RolesAllowed("Admin") 
 public void addMedicine(String name, String brand, BigDecimal price, int stock, 
                         LocalDate expiryDate, Integer categoryId, Integer manufacturerId,
                         Integer packOf, String description, String picture) {
@@ -147,6 +160,7 @@ manufacturer.setMedicinesCollection(manufacturerMedicines);
 }
 
     @Override
+    @RolesAllowed("Admin") 
 public void updateMedicine(Integer medicineId, String name, String brand, BigDecimal price, int stock,
                            LocalDate expiryDate, Integer categoryId, Integer manufacturerId,
                            Integer packOf, String description, String picture) {
@@ -186,30 +200,34 @@ public void updateMedicine(Integer medicineId, String name, String brand, BigDec
 }
     
     @Override
+    @RolesAllowed("Admin") 
     public void deleteMedicine(Integer medicineId) {
         Medicines m = em.find(Medicines.class, medicineId);
         
         em.remove(m);
     }
   @Override
+  @RolesAllowed("Admin") 
 public Collection<Medicines> getAllMedicines() {
     return em.createNamedQuery("Medicines.findAll").getResultList();
 }
 
 @Override
+@RolesAllowed("Admin") 
 public Medicines getMedicineById(Integer medicineId) {
     Medicines medicine = em.find(Medicines.class, medicineId);
     return medicine;
 }
 
 @Override
+@RolesAllowed("Admin") 
 public Collection<Medicines> getMedicineByName(String name) {
     Collection<Medicines> medicines = em.createNamedQuery("Medicines.findByName")
                                         .setParameter("name", name)
                                         .getResultList();
     return medicines;
 }
-@Override
+@Override@RolesAllowed("Admin") 
 public Collection<Medicines> getMedicinesByCategory(Integer categoryId) {
     Collection<Medicines> medicines = em.createNamedQuery("Medicines.findByCategory")
                                         .setParameter("categoryId", categoryId)
@@ -217,6 +235,7 @@ public Collection<Medicines> getMedicinesByCategory(Integer categoryId) {
     return medicines;
 }
 @Override
+@RolesAllowed("Admin") 
 public Collection<Medicines> getMedicinesByManufacturer(Integer manufacturerId) {
     Collection<Medicines> medicines = em.createNamedQuery("Medicines.findByManufacturer")
                                         .setParameter("manufacturerId", manufacturerId)
@@ -225,6 +244,7 @@ public Collection<Medicines> getMedicinesByManufacturer(Integer manufacturerId) 
 }
 
 @Override
+@RolesAllowed("Admin") 
 public void updateMedicineStock(Integer medicineId, int newStock) {
     Medicines medicine = em.find(Medicines.class, medicineId);
         medicine.setStock(newStock);
@@ -232,30 +252,35 @@ public void updateMedicineStock(Integer medicineId, int newStock) {
 }
 
 @Override
+@RolesAllowed("Admin") 
 public Collection<Medicines> getLowStockMedicines(int threshold) {
     Collection<Medicines> medicines = em.createNamedQuery("Medicines.findLowStock", Medicines.class)
                                         .setParameter("threshold", threshold)
                                         .getResultList();
     return medicines;
-}@Override
-public boolean login(String email, String password) {
-    try {
-        Users user = em.createQuery(
-            "SELECT u FROM Users u WHERE u.email = :e AND u.password = :p",
-            Users.class
-        )
-        .setParameter("e", email)
-        .setParameter("p", password)
-        .getSingleResult();
-
-        System.out.println("LOGIN SUCCESS: " + user.getEmail());
-        System.out.println("ROLE = " + user.getRoleId().getRoleName());
-
-        return true;
-    } catch (Exception ex) {
-        System.out.println("LOGIN FAILED: " + ex.getMessage());
-        return false;
-    }
 }
+    @Override
+    @RolesAllowed("Admin") 
+    public boolean login(String email, String password) {
+        try {
+            Long count = em.createQuery(
+                "SELECT COUNT(a) FROM Users a WHERE a.email = :e AND a.password = :p",
+                Long.class
+            )
+            .setParameter("e", email)
+            .setParameter("p", password)
+            .getSingleResult();
 
+            return count == 1;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+  
+    @Override
+//    @RolesAllowed("Admin") 
+    public List<Users> getAllUsers() {
+        return em.createNamedQuery("Users.findAll", Users.class)
+                .getResultList();
+    }
     }

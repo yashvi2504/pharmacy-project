@@ -20,6 +20,8 @@ public class AuthREST {
 
   @POST
 @Path("login")
+   @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
 public Response login(UserLogin login) {
 
     boolean isValid = adminEJB.login(login.getEmail(), login.getPassword());

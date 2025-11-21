@@ -13,7 +13,8 @@ import java.util.List;
 
 @Local
 public interface AdminEJBLocal {
-      boolean login(String username, String password);
+        boolean login(String email, String password);
+            List<Users> getAllUsers();
     void addCategory(String name, String description);
     void updateCategory(Integer categoryId, String name, String description);
     void deleteCategory(Integer categoryId);

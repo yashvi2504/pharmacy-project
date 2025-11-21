@@ -45,7 +45,15 @@ public class SecureAuthentication implements HttpAuthenticationMechanism, Serial
 
     @Override
     public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response, HttpMessageContext ctx) throws AuthenticationException {
-        // handle logout
+    // Skip JSF auth for REST endpoints
+if (request.getRequestURI().startsWith(request.getContextPath() + "/api/")) {
+    return ctx.doNothing(); // let JAX-RS handle it
+}
+       
+
+// handle logout
+        
+        
         try {
             if (request.getRequestURI().contains("Logout")) {
                 try { request.logout(); } catch (Exception ex) { /* ignore */ }
@@ -93,7 +101,7 @@ public class SecureAuthentication implements HttpAuthenticationMechanism, Serial
 
                     // Forward user to appropriate page
                     if (roles.contains("Admin")) {
-                        request.getRequestDispatcher("Admin/Admin.jsf").forward(request, response);
+                        request.getRequestDispatcher("Admin.jsf").forward(request, response);
                     }else if(roles.contains("Delivery")) {
                         request.getRequestDispatcher("Delivery/delivery.jsf").forward(request, response);
                     }
