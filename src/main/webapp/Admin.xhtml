@@ -53,6 +53,11 @@
 </h:head>
 
 <h:body>
+        <f:metadata>
+        <!-- calls LoginBean.verifyAdminAccess() before the view renders -->
+        <f:event type="preRenderView" listener="#{loginBean.verifyAdminAccess}" />
+    </f:metadata>
+
     <div class="flex flex-column h-screen">
         
         <div class="topbar">

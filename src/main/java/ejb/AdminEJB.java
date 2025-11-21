@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.List;
 
 @Stateless
-//@DeclareRoles({"Admin", "Customer", "Delivery"})
+@DeclareRoles({"Admin", "Customer", "Delivery"})
 //@RolesAllowed("Admin")   // ⭐ ALL methods require ADMIN
 public class AdminEJB implements AdminEJBLocal {
 
@@ -33,7 +33,7 @@ public class AdminEJB implements AdminEJBLocal {
 
     // --------- Category CRUD ---------
     @Override
-//    @RolesAllowed("Admin") 
+    @RolesAllowed("Admin") 
     public void addCategory(String name, String description) {
         Categories category = new Categories();
         category.setName(name);
@@ -42,7 +42,7 @@ public class AdminEJB implements AdminEJBLocal {
     }
 
     @Override
-//    @RolesAllowed("Admin") 
+    @RolesAllowed("Admin") 
     public void updateCategory(Integer categoryId, String name, String description) {
         Categories category = em.find(Categories.class, categoryId);
         if (category != null) {
@@ -53,7 +53,7 @@ public class AdminEJB implements AdminEJBLocal {
     }
 
    @Override
-//   @RolesAllowed("Admin") 
+   @RolesAllowed("Admin") 
 public void deleteCategory(Integer categoryId) {
     Categories category = em.find(Categories.class, categoryId);
     if (category == null) {
